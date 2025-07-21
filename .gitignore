@@ -1,3 +1,8 @@
-*.xlsx
-*.txt
-.env
+# Ignorar tudo
+**
+
+# Exceto código Python e arquivos importantes
+!*.py
+!.gitignore
+!README.md
+

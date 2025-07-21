@@ -10,7 +10,7 @@ def google_dork(query, api_key):
     client = serpapi.Client(api_key=api_key)
     params = {
         "engine": "google",
-        "q": f"\"{query}\"",
+        "q": query,
         "num": 100
     }
     result = client.search(params)
@@ -21,20 +21,37 @@ def google_dork(query, api_key):
         data.append({"Link": link, "Description": snippet})
     return data
 
-def save_results(filename, data):
+def save_results(folder, filename, data):
     df = pd.DataFrame(data)
-    df.to_excel(filename, index=False)
+    filepath = os.path.join(folder, filename)
+    df.to_excel(filepath, index=False)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python3 PyGDork.py \"Search Term\"")
         sys.exit(1)
+
     query = sys.argv[1]
     api_key = os.getenv("SERPAPI_KEY")
     if not api_key:
         print("SERPAPI_KEY not found in .env file.")
         sys.exit(1)
-    data = google_dork(query, api_key)
-    filename = query.lower().replace(" ", "_") + ".xlsx"
-    save_results(filename, data)
-    print(f"Saved {len(data)} results to {filename}")
+
+    folder_name = query.replace(" ", "_")
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+    social_sites = {
+        "instagram": "site:instagram.com",
+        "twitter": "site:twitter.com",
+        "tiktok": "site:tiktok.com",
+        "facebook": "site:facebook.com"
+    }
+
+    for site, dork in social_sites.items():
+        search_query = f"{dork} \"{query}\""
+        print(f"Searching: {search_query}")
+        results = google_dork(search_query, api_key)
+        filename = f"{site}_{folder_name}.xlsx"
+        save_results(folder_name, filename, results)
+        print(f"Saved {len(results)} results to {filename}")
