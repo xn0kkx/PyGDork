@@ -52,6 +52,10 @@ if __name__ == "__main__":
         search_query = f"{dork} \"{query}\""
         print(f"Searching: {search_query}")
         results = google_dork(search_query, api_key)
-        filename = f"{site}_{folder_name}.xlsx"
-        save_results(folder_name, filename, results)
-        print(f"Saved {len(results)} results to {filename}")
+
+        if results:
+            filename = f"{site}_{folder_name}.xlsx"
+            save_results(folder_name, filename, results)
+            print(f"Saved {len(results)} results to {filename}")
+        else:
+            print(f"No results found for {site}, skipping file creation.")
