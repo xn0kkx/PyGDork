@@ -1,5 +1,6 @@
 import sys
 import os
+import pandas as pd
 import serpapi
 from dotenv import load_dotenv
 
@@ -13,13 +14,16 @@ def google_dork(query, api_key):
         "num": 100
     }
     result = client.search(params)
-    urls = [item["link"] for item in result.get("organic_results", []) if item.get("link")]
-    return urls
+    data = []
+    for item in result.get("organic_results", []):
+        link = item.get("link", "")
+        snippet = item.get("snippet", "")
+        data.append({"Link": link, "Description": snippet})
+    return data
 
-def save_results(filename, urls):
-    with open(filename, "w") as f:
-        for url in urls:
-            f.write(url + "\n")
+def save_results(filename, data):
+    df = pd.DataFrame(data)
+    df.to_excel(filename, index=False)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -30,7 +34,7 @@ if __name__ == "__main__":
     if not api_key:
         print("SERPAPI_KEY not found in .env file.")
         sys.exit(1)
-    urls = google_dork(query, api_key)
-    filename = query.lower().replace(" ", "_") + ".txt"
-    save_results(filename, urls)
-    print(f"Saved {len(urls)} URLs to {filename}")
+    data = google_dork(query, api_key)
+    filename = query.lower().replace(" ", "_") + ".xlsx"
+    save_results(filename, data)
+    print(f"Saved {len(data)} results to {filename}")
